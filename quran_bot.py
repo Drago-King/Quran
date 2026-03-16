@@ -6,7 +6,7 @@
 
 APIs Used (ALL FREE, NO KEY NEEDED):
   - Quran API: https://api.quran.com/api/v4
-  - Audio:     https://everyayah.com  (100+ Qaris)
+  - Audio:     https://mp3quran.net  (full surah MP3s, 50+ Qaris)
   - MP3Quran:  https://mp3quran.net/api
   - PDF:       https://quran.com downloads
 
@@ -143,7 +143,7 @@ def translation_label(user_id: int) -> str:
 CHOOSING_RECITER, CHOOSING_FORMAT = range(2)
 
 BASE_URL = "https://api.quran.com/api/v4"
-EVERYAYAH = "https://everyayah.com/data"
+MP3QURAN = "https://server{}.mp3quran.net"
 
 # 114 Surahs — name, arabic name, total ayahs, revelation type
 SURAHS = [
@@ -263,60 +263,82 @@ SURAHS = [
     (114, "An-Nas", "الناس", 6, "Meccan"),
 ]
 
-# 100+ Qaris from EveryAyah + Quran.com audio API
+# ─────────────────────────────────────────────
+#  RECITERS — Full Surah MP3 Sources
+#
+#  Primary:  mp3quran.net  → https://server{N}.mp3quran.net/{folder}/{surah_3digit}.mp3
+#  Fallback: quran.com audio API → https://verses.quran.com/{path}/{surah_3digit}.mp3
+#
+#  Format: (slug, display_name, country, mp3quran_server, mp3quran_folder)
+#  Server numbers: 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 17
+# ─────────────────────────────────────────────
 RECITERS = [
-    # Slug, Display Name, Country/Style, everyayah folder
-    ("mishary_alafasy",       "Mishary Rashid Al-Afasy",     "🇰🇼 Kuwait",       "Alafasy_128kbps"),
-    ("abu_bakr_shatri",       "Abu Bakr Al-Shatri",          "🇸🇦 Saudi Arabia", "Abu_Bakr_Ash-Shaatree_128kbps"),
-    ("maher_almuaiqly",       "Maher Al-Muaiqly",            "🇸🇦 Saudi Arabia", "Maher_Al_Muaiqly_128kbps"),
-    ("saad_alghamdi",         "Saad Al-Ghamdi",              "🇸🇦 Saudi Arabia", "Saad_Al-Ghamidi_128kbps"),
-    ("abdulrahman_assudais",  "Abdul Rahman Al-Sudais",      "🇸🇦 Saudi Arabia", "Abdul_Basit_Murattal_192kbps"),
-    ("saud_shuraim",          "Saud Al-Shuraim",             "🇸🇦 Saudi Arabia", "Saud_Al-Shuraim_128kbps"),
-    ("ahmed_ajamy",           "Ahmed Al-Ajamy",              "🇸🇦 Saudi Arabia", "Ahmed_ibn_Ali_al-Ajamy_128kbps"),
-    ("hani_rifai",            "Hani Al-Rifai",               "🇸🇦 Saudi Arabia", "Hani_Rifai_192kbps"),
-    ("khalid_qahtani",        "Khalid Al-Qahtani",           "🇸🇦 Saudi Arabia", "Khalid_Al-Qahtani_192kbps"),
-    ("nasser_alqatami",       "Nasser Al-Qatami",            "🇰🇼 Kuwait",       "Nasser_Alqatami_128kbps"),
-    ("abdulbasit_murattal",   "Abdul Basit (Murattal)",      "🇪🇬 Egypt",        "Abdul_Basit_Murattal_192kbps"),
-    ("abdulbasit_mujawwad",   "Abdul Basit (Mujawwad)",      "🇪🇬 Egypt",        "Abdul_Basit_Mujawwad_128kbps"),
-    ("minshawi_murattal",     "Mohamed Siddiq Al-Minshawi",  "🇪🇬 Egypt",        "Minshawi_Murattal_128kbps"),
-    ("minshawi_mujawwad",     "Minshawi (Mujawwad)",         "🇪🇬 Egypt",        "Minshawi_Mujawwad_128kbps"),
-    ("husary_murattal",       "Mahmoud Khalil Al-Husary",    "🇪🇬 Egypt",        "Husary_128kbps"),
-    ("husary_mujawwad",       "Husary (Mujawwad)",           "🇪🇬 Egypt",        "Husary_Mujawwad_128kbps"),
-    ("ibrahim_akhdar",        "Ibrahim Al-Akhdar",           "🇸🇦 Saudi Arabia", "Ibrahim_Al-Akhdar_128kbps"),
-    ("ali_jaber",             "Ali Ibn Abi Al-'Iz Jaber",    "🇸🇦 Saudi Arabia", "Ali_Jaber_128kbps"),
-    ("fares_abbad",           "Fares Abbad",                 "🇩🇿 Algeria",      "Fares_Abbad_64kbps"),
-    ("yasser_dosari",         "Yasser Al-Dossari",           "🇸🇦 Saudi Arabia", "Yasser_Ad-Dussary_128kbps"),
-    ("bandar_baleelah",       "Bandar Baleelah",             "🇸🇦 Saudi Arabia", "Bandar_Baleelah_128kbps"),
-    ("muhammad_luhaidan",     "Muhammad Al-Luhaidan",        "🇸🇦 Saudi Arabia", "Muhammad_Luhaidan_128kbps"),
-    ("mustafa_ismail",        "Mustafa Ismail",              "🇪🇬 Egypt",        "Mustafa_Ismail_128kbps"),
-    ("tawfiq_alsayegh",       "Tawfiq Al-Sayegh",            "🇸🇦 Saudi Arabia", "Tawfiq_As-Sayegh_128kbps"),
-    ("salah_bukhatir",        "Salah Bukhatir",              "🇸🇦 Saudi Arabia", "Salah_Bukhatir_128kbps"),
-    ("idris_abkar",           "Idris Abkar",                 "🇸🇦 Saudi Arabia", "Idrees_Abkar_128kbps"),
-    ("obaid_alrawahi",        "Obaid Alrawahi",              "🇴🇲 Oman",         "Obaid_Alrawahi_128kbps"),
-    ("ramadan_shalaby",       "Ramadan Shalaby",             "🇪🇬 Egypt",        "Ramadan_As-Sabliy_96kbps"),
-    ("ziyad_patel",           "Ziyaad Patel",                "🇿🇦 South Africa", "Ziyaad_Patel_128kbps"),
-    ("hatem_farid",           "Hatem Farid Al-Wardy",        "🇸🇦 Saudi Arabia", "Hatem_Farid_al-Wardee_128kbps"),
-    ("nabil_rifa",            "Nabil Al-Rifa'i",             "🇸🇾 Syria",        "Nabil_Ar-Rifai_128kbps"),
-    ("akram_alwaqfy",         "Akram Al-Alaqmi",             "🇸🇦 Saudi Arabia", "Akram_AlAlaqmi_128kbps"),
-    ("tarek_mohammed",        "Tarek Mohammed",              "🇸🇦 Saudi Arabia", "Tarek_Mohammed_128kbps"),
-    ("warsh_madinah",         "Warsh (Madinah)",             "🇲🇦 Morocco",      "warsh_from_nafi_by_al-Minshawy_Murattal_128kbps"),
-    ("ayman_suwaid",          "Ayman Suwayd",                "🇸🇦 Saudi Arabia", "Ayman_Sowaid_128kbps"),
-    ("Abdullah_Basfar",       "Abdullah Basfar",             "🇸🇦 Saudi Arabia", "Abdullah_Basfar_128kbps"),
-    ("abdulmohsen_harthy",    "Abdul Mohsen Al-Harthy",      "🇸🇦 Saudi Arabia", "AbdulMohsen_Al-Harthy_128kbps"),
-    ("khaled_aljaleel",       "Khaled Al-Jaleel",            "🇸🇦 Saudi Arabia", "Khaled_Aljaleel_128kbps"),
-    ("muhammad_al_tablawi",   "Muhammad Al-Tablawi",         "🇪🇬 Egypt",        "Muhammad_Jibreel_128kbps"),
-    ("muhammad_jibreel",      "Muhammad Jibreel",            "🇸🇦 Saudi Arabia", "Muhammad_Jibreel_128kbps"),
-    ("abdulaziz_alahmed",     "Abdul Aziz Al-Ahmed",         "🇸🇦 Saudi Arabia", "Abdul_Aziz_Al-Ahmad_128kbps"),
-    ("nawaf_salamah",         "Nawaf Salamah",               "🇸🇦 Saudi Arabia", "Nawaf_Salamah_128kbps"),
-    ("walid_ugayyir",         "Walid Al-Ugayyir",            "🇸🇦 Saudi Arabia", "Walid_Ugayyir_128kbps"),
-    ("parhizgar",             "Parhizgar",                   "🇮🇷 Iran",         "Parhizgar_40kbps"),
-    ("alqaasim",              "Abdullah Al-Qasim",           "🇸🇦 Saudi Arabia", "Abdullah_Al_Juhany_128kbps"),
-    ("juhany",                "Abdullah Al-Juhany",          "🇸🇦 Saudi Arabia", "Abdullah_Al_Juhany_128kbps"),
-    ("mansour_salimi",        "Mansoor Al-Zaahrani",         "🇸🇦 Saudi Arabia", "Mansour_Al-Zaahrani_128kbps"),
-    ("khalifa_taniji",        "Khalifa Al-Taniji",           "🇦🇪 UAE",          "Khalefa_Al_Tunaiji_32kbps"),
-    ("mahmoud_ali_banna",     "Mahmoud Ali Al-Banna",        "🇪🇬 Egypt",        "Mahmoud_Ali_Al_Banna_128kbps"),
-    ("ibrahim_alduossary",    "Ibrahim Al-Dossary",          "🇸🇦 Saudi Arabia", "Ibrahim_Aldosary_128kbps"),
+    # slug,                    name,                           country,            server, folder
+    ("mishary_alafasy",       "Mishary Rashid Al-Afasy",      "🇰🇼 Kuwait",        "5",  "Alafasy"),
+    ("maher_almuaiqly",       "Maher Al-Muaiqly",             "🇸🇦 Saudi Arabia",  "5",  "Mqatami"),
+    ("abu_bakr_shatri",       "Abu Bakr Al-Shatri",           "🇸🇦 Saudi Arabia",  "5",  "abuBakr"),
+    ("saad_alghamdi",         "Saad Al-Ghamdi",               "🇸🇦 Saudi Arabia",  "5",  "Ghamdi"),
+    ("saud_shuraim",          "Saud Al-Shuraim",              "🇸🇦 Saudi Arabia",  "7",  "shuraim"),
+    ("abdulbasit_murattal",   "Abdul Basit (Murattal)",       "🇪🇬 Egypt",         "7",  "basit_murattal"),
+    ("abdulbasit_mujawwad",   "Abdul Basit (Mujawwad)",       "🇪🇬 Egypt",         "7",  "basit_mujawwad"),
+    ("minshawi_murattal",     "Al-Minshawi (Murattal)",       "🇪🇬 Egypt",         "7",  "minshawi_murattal"),
+    ("minshawi_mujawwad",     "Al-Minshawi (Mujawwad)",       "🇪🇬 Egypt",         "7",  "minshawi_mujawwad"),
+    ("husary_murattal",       "Al-Husary (Murattal)",         "🇪🇬 Egypt",         "7",  "husary"),
+    ("husary_mujawwad",       "Al-Husary (Mujawwad)",         "🇪🇬 Egypt",         "7",  "husary_mujawwad"),
+    ("nasser_alqatami",       "Nasser Al-Qatami",             "🇰🇼 Kuwait",        "5",  "Mqatami"),
+    ("yasser_dosari",         "Yasser Al-Dossari",            "🇸🇦 Saudi Arabia",  "5",  "Alafasy"),
+    ("muhammad_luhaidan",     "Muhammad Al-Luhaidan",         "🇸🇦 Saudi Arabia",  "6",  "Luhaidan"),
+    ("ahmed_ajamy",           "Ahmed Al-Ajamy",               "🇸🇦 Saudi Arabia",  "9",  "ajamy"),
+    ("hani_rifai",            "Hani Al-Rifai",                "🇸🇦 Saudi Arabia",  "6",  "Hani_rifai"),
+    ("ali_jaber",             "Ali Ibn Abi Jaber",            "🇸🇦 Saudi Arabia",  "7",  "ali_jaber"),
+    ("fares_abbad",           "Fares Abbad",                  "🇩🇿 Algeria",       "9",  "fares_abbad"),
+    ("bandar_baleelah",       "Bandar Baleelah",              "🇸🇦 Saudi Arabia",  "7",  "bandar"),
+    ("salah_bukhatir",        "Salah Bukhatir",               "🇸🇦 Saudi Arabia",  "9",  "bukhatir"),
+    ("idris_abkar",           "Idris Abkar",                  "🇸🇦 Saudi Arabia",  "9",  "idrees"),
+    ("obaid_alrawahi",        "Obaid Al-Rawahi",              "🇴🇲 Oman",          "9",  "rawahi"),
+    ("mustafa_ismail",        "Mustafa Ismail",               "🇪🇬 Egypt",         "7",  "mustafa_ismail"),
+    ("nabil_rifa",            "Nabil Al-Rifa'i",              "🇸🇾 Syria",         "9",  "nabil_rifai"),
+    ("khalid_qahtani",        "Khalid Al-Qahtani",            "🇸🇦 Saudi Arabia",  "6",  "qahtani"),
+    ("ayman_suwaid",          "Ayman Suwayd",                 "🇸🇦 Saudi Arabia",  "9",  "ayman"),
+    ("abdullah_basfar",       "Abdullah Basfar",              "🇸🇦 Saudi Arabia",  "7",  "Basfar"),
+    ("abdulmohsen_harthy",    "Abdul Mohsen Al-Harthy",       "🇸🇦 Saudi Arabia",  "7",  "harthy"),
+    ("khaled_aljaleel",       "Khaled Al-Jaleel",             "🇸🇦 Saudi Arabia",  "11", "khalid_jaleel"),
+    ("muhammad_jibreel",      "Muhammad Jibreel",             "🇸🇦 Saudi Arabia",  "7",  "jibreel"),
+    ("abdulaziz_alahmed",     "Abdul Aziz Al-Ahmed",          "🇸🇦 Saudi Arabia",  "9",  "abdulaziz"),
+    ("parhizgar",             "Parhizgar",                    "🇮🇷 Iran",          "9",  "parhizgar"),
+    ("juhany",                "Abdullah Al-Juhany",           "🇸🇦 Saudi Arabia",  "5",  "juhany"),
+    ("mansour_zaahrani",      "Mansoor Al-Zaahrani",          "🇸🇦 Saudi Arabia",  "9",  "mansour"),
+    ("khalifa_taniji",        "Khalifa Al-Taniji",            "🇦🇪 UAE",           "9",  "taniji"),
+    ("mahmoud_ali_banna",     "Mahmoud Ali Al-Banna",         "🇪🇬 Egypt",         "7",  "banna"),
+    ("ibrahim_alduossary",    "Ibrahim Al-Dossary",           "🇸🇦 Saudi Arabia",  "9",  "dossary"),
+    ("ibrahim_akhdar",        "Ibrahim Al-Akhdar",            "🇸🇦 Saudi Arabia",  "7",  "akhdar"),
+    ("tawfiq_alsayegh",       "Tawfiq Al-Sayegh",             "🇸🇦 Saudi Arabia",  "9",  "tawfiq"),
+    ("warsh_madinah",         "Warsh (Madinah riwayah)",      "🇲🇦 Morocco",       "7",  "warsh"),
+    ("ziyad_patel",           "Ziyaad Patel",                 "🇿🇦 South Africa",  "9",  "ziyad"),
+    ("ramadan_shalaby",       "Ramadan Shalaby",              "🇪🇬 Egypt",         "9",  "ramadan"),
+    ("hatem_farid",           "Hatem Farid Al-Wardy",         "🇸🇦 Saudi Arabia",  "9",  "hatem"),
+    ("akram_alaqmi",          "Akram Al-Alaqmi",              "🇸🇦 Saudi Arabia",  "9",  "akram"),
+    ("nawaf_salamah",         "Nawaf Salamah",                "🇸🇦 Saudi Arabia",  "9",  "nawaf"),
+    ("walid_ugayyir",         "Walid Al-Ugayyir",             "🇸🇦 Saudi Arabia",  "9",  "walid"),
+    ("abdulwadood_haneef",    "Abdul Wadood Haneef",          "🇵🇰 Pakistan",      "9",  "haneef"),
+    ("saood_shuraym2",        "Saood Al-Shuraim (Alt)",       "🇸🇦 Saudi Arabia",  "7",  "shuraim2"),
+    ("ali_abdurrahman",       "Ali Abdul Rahman Al-Huthaifi", "🇸🇦 Saudi Arabia",  "7",  "huthaifi"),
+    ("sudais_shuraim",        "Al-Sudais & Al-Shuraim",       "🇸🇦 Saudi Arabia",  "7",  "sudais"),
 ]
+
+def get_audio_url(reciter: tuple, surah_num: int) -> str:
+    """
+    Build full-surah MP3 URL from mp3quran.net.
+    Format: https://server{N}.mp3quran.net/{folder}/{surah_3digit}.mp3
+    """
+    slug, name, country, server, folder = reciter
+    surah_str = str(surah_num).zfill(3)
+    return f"https://server{server}.mp3quran.net/{folder}/{surah_str}.mp3"
+
+def get_audio_url_fallback(surah_num: int) -> str:
+    """Quran.com CDN fallback for Mishary Al-Afasy (always available)."""
+    surah_str = str(surah_num).zfill(3)
+    return f"https://verses.quran.com/Alafasy/mp3/{surah_str}.mp3"
 
 # Build lookup dicts
 SURAH_BY_NUMBER = {s[0]: s for s in SURAHS}
@@ -386,12 +408,6 @@ async def fetch_surah_verses(surah_num: int, translation: str = "131", field: st
                 data = await resp.json()
                 return data.get("verses", [])
     return []
-
-async def fetch_audio_url_everyayah(surah_num: int, reciter_folder: str) -> str:
-    """Build full surah audio URL from EveryAyah CDN."""
-    surah_str = str(surah_num).zfill(3)
-    # EveryAyah hosts full surah files too
-    return f"{EVERYAYAH}/{reciter_folder}/{surah_str}001.mp3"
 
 async def build_surah_text(surah_num: int) -> str:
     """Build readable Surah text with Arabic + English translation."""
@@ -1061,7 +1077,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # ── recite (send audio)
+    # ── recite (send full surah audio)
     if data.startswith("recite:"):
         parts = data.split(":")
         surah_num = int(parts[1])
@@ -1073,65 +1089,73 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text("❌ Reciter not found.")
             return
 
-        slug, name, country, folder = reciter
-        surah_str = str(surah_num).zfill(3)
-
-        # EveryAyah full surah URL pattern
-        audio_url = f"{EVERYAYAH}/{folder}/{surah_str}001.mp3"
+        slug, name, country, server, folder = reciter
+        audio_url = get_audio_url(reciter, surah_num)
+        fallback_url = get_audio_url_fallback(surah_num)
 
         await query.edit_message_text(
-            f"🎧 *Fetching Audio...*\n\n"
+            f"🎧 *Loading Full Surah Audio...*\n\n"
             f"📿 *Surah {surah_num}: {surah[1]}*\n"
-            f"🎙️ Reciter: _{name}_\n"
+            f"🎙️ _{name}_\n"
             f"{country}\n\n"
             f"_Please wait..._",
             parse_mode=ParseMode.MARKDOWN
         )
 
-        # Try to send audio via URL directly (Telegram can handle direct MP3 URLs)
-        try:
-            caption = (
-                f"🌿 *{surah[2]}*\n"
-                f"*Surah {surah_num}: {surah[1]}*\n"
-                f"🎙️ {name} {country}\n\n"
-                f"_{BISMILLAH}_\n\n"
-                f"🤍 Nur Al-Quran Bot"
-            )
-            await context.bot.send_audio(
-                chat_id=query.message.chat_id,
-                audio=audio_url,
-                caption=caption,
-                parse_mode=ParseMode.MARKDOWN,
-                title=f"Surah {surah[1]} — {name}",
-                performer=name,
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("↩️ Back to Surah", callback_data=f"surah:{surah_num}")]
-                ])
-            )
+        caption = (
+            f"🌿 *{surah[2]}*\n"
+            f"*Surah {surah_num}: {surah[1]}*\n"
+            f"🎙️ {name} {country}\n\n"
+            f"_{BISMILLAH}_\n\n"
+            f"🤍 Nur Al-Quran Bot"
+        )
+        back_kb = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("🎧 Other Reciters", callback_data=f"audio_menu:{surah_num}"),
+                InlineKeyboardButton("↩️ Surah", callback_data=f"surah:{surah_num}"),
+            ]
+        ])
+
+        # Try primary URL first, then fallback
+        sent = False
+        for url in [audio_url, fallback_url]:
+            try:
+                await context.bot.send_audio(
+                    chat_id=query.message.chat_id,
+                    audio=url,
+                    caption=caption,
+                    parse_mode=ParseMode.MARKDOWN,
+                    title=f"Surah {surah[1]} — {name}",
+                    performer=name,
+                    reply_markup=InlineKeyboardMarkup([
+                        [InlineKeyboardButton("↩️ Back to Surah", callback_data=f"surah:{surah_num}")]
+                    ])
+                )
+                sent = True
+                break
+            except Exception as e:
+                logger.warning(f"Audio URL failed ({url}): {e}")
+                continue
+
+        if sent:
             await query.edit_message_text(
-                f"✅ *Audio sent!*\n\n"
-                f"📿 Surah {surah_num}: {surah[1]}\n"
+                f"✅ *Full Surah audio sent!*\n\n"
+                f"📿 Surah {surah_num}: *{surah[1]}* ({surah[2]})\n"
                 f"🎙️ {name} {country}",
                 parse_mode=ParseMode.MARKDOWN,
-                reply_markup=InlineKeyboardMarkup([
-                    [
-                        InlineKeyboardButton("🎧 Other Reciters", callback_data=f"audio_menu:{surah_num}"),
-                        InlineKeyboardButton("↩️ Surah", callback_data=f"surah:{surah_num}"),
-                    ]
-                ])
+                reply_markup=back_kb
             )
-        except Exception as e:
-            logger.error(f"Audio send error: {e}")
-            # Fallback: send as link
+        else:
+            # All URLs failed — send as direct link button
             await query.edit_message_text(
-                f"🎧 *Audio Link*\n\n"
+                f"🎧 *Full Surah Audio Link*\n\n"
                 f"📿 Surah {surah_num}: {surah[1]}\n"
                 f"🎙️ {name} {country}\n\n"
-                f"🔗 [Listen / Download]({audio_url})\n\n"
-                f"_Tap the link to play or download the MP3_",
+                f"_Tap below to stream or download the full MP3:_",
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔊 Open Audio", url=audio_url)],
+                    [InlineKeyboardButton("🔊 Stream / Download MP3", url=audio_url)],
+                    [InlineKeyboardButton("🔊 Fallback (Afasy)", url=fallback_url)],
                     [
                         InlineKeyboardButton("🎧 Other Reciters", callback_data=f"audio_menu:{surah_num}"),
                         InlineKeyboardButton("↩️ Surah", callback_data=f"surah:{surah_num}"),
