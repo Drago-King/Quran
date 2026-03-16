@@ -517,7 +517,7 @@ def reciter_keyboard(surah_num: int, page: int = 0):
     total_pages = (len(RECITERS) + per_page - 1) // per_page
 
     rows = []
-    for slug, name, country, _ in page_reciters:
+    for slug, name, country, *_ in page_reciters:
         rows.append([InlineKeyboardButton(
             f"{country} {name}",
             callback_data=f"recite:{surah_num}:{slug}"
@@ -609,7 +609,7 @@ def translation_keyboard(surah_num: int, page: int = 0, user_id: int = 0):
 def reciter_search_results_keyboard(surah_num: int, results: list):
     """Show reciter search results."""
     rows = []
-    for slug, name, country, _ in results[:10]:
+    for slug, name, country, *_ in results[:10]:
         rows.append([InlineKeyboardButton(
             f"{country} {name}",
             callback_data=f"recite:{surah_num}:{slug}"
