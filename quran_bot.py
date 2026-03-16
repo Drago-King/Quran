@@ -11,7 +11,7 @@ APIs Used (ALL FREE, NO KEY NEEDED):
   - PDF:       https://quran.com downloads
 
 Setup:
-  pip install python-telegram-bot==20.7 aiohttp aiofiles
+  pip install python-telegram-bot==21.6 aiohttp aiofiles
 
 Set your token:
   export TELEGRAM_TOKEN="your_bot_token_here"
